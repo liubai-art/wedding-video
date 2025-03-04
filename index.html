@@ -16,34 +16,28 @@
             background: #f5f5f5;
         }
 
-        /* 导航样式 */
         .navbar {
             background: #fff;
             padding: 1rem 2rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .navbar a {
-            text-decoration: none;
-            color: #333;
-            font-size: 1.2rem;
-        }
-
-        /* 视频列表容器 */
         .video-container {
-            max-width: 1200px;
+            max-width: 1440px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
 
-        /* 视频网格布局 */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem 0;
         }
 
-        /* 单个视频卡片 */
         .video-card {
             background: white;
             border-radius: 8px;
@@ -54,13 +48,12 @@
         }
 
         .video-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
         }
 
-        /* 视频缩略图 */
         .video-thumbnail {
             position: relative;
-            padding-top: 56.25%; /* 16:9 比例 */
+            padding-top: 56.25%;
             background: #000;
         }
 
@@ -73,96 +66,124 @@
             object-fit: cover;
         }
 
-        /* 视频信息 */
         .video-info {
             padding: 1rem;
         }
 
         .video-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #333;
-            margin-bottom: 0.5rem;
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
 
         /* 详情页样式 */
+        .detail-page {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
         .detail-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
         }
 
         .video-player {
             width: 100%;
-            height: 450px;
+            height: 600px;
             background: #000;
-            margin-bottom: 2rem;
-        }
-
-        .video-description {
-            background: white;
-            padding: 2rem;
             border-radius: 8px;
-            line-height: 1.6;
-            color: #666;
+            overflow: hidden;
         }
 
-        .back-link {
-            display: inline-block;
-            margin-bottom: 1rem;
+        .video-player video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #f0f0f0;
+            border-radius: 4px;
             text-decoration: none;
-            color: #666;
+            color: #333;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            
+            .video-player {
+                height: 300px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <span>视频展示平台</span>
+    </div>
+
     <!-- 首页 -->
     <div id="home-page">
-        <nav class="navbar">
-            <a href="/">视频平台</a>
-        </nav>
-
         <div class="video-container">
-            <div class="video-grid" id="video-list">
-                <!-- 视频卡片通过JS动态生成 -->
-            </div>
+            <div class="video-grid" id="video-list"></div>
         </div>
     </div>
 
-    <!-- 详情页模板（实际使用时应为独立页面） -->
-    <div id="detail-page" style="display: none;">
+    <!-- 详情页 -->
+    <div id="detail-page" class="detail-page">
         <div class="detail-container">
-            <a href="javascript:history.back()" class="back-link">← 返回列表</a>
+            <a href="#" class="back-btn" id="back-btn">返回列表</a>
             <div class="video-player">
-                <video controls width="100%" height="100%">
+                <video controls>
                     <source src="" type="video/mp4">
+                    您的浏览器不支持视频播放
                 </video>
             </div>
-            <h1 class="video-title"></h1>
-            <div class="video-description"></div>
+            <h1 id="detail-title"></h1>
+            <div id="detail-description"></div>
         </div>
     </div>
 
     <script>
-        // 视频数据示例
-        const videos = [
-            {
-                id: 1,
-                title: '示例视频1',
-                thumbnail: 'thumbnail1.jpg',
-                videoUrl: 'video1.mp4',
-                description: '这是第一个示例视频的详细介绍内容...'
-            },
-            {
-                id: 2,
-                title: '示例视频2',
-                thumbnail: 'thumbnail2.jpg',
-                videoUrl: 'video2.mp4',
-                description: '这是第二个示例视频的详细介绍内容...'
-            }
-        ];
+        // 生成20个示例视频数据
+        const videos = Array.from({length: 20}, (_, i) => ({
+            id: i + 1,
+            title: `演示视频 ${i + 1}`,
+            thumbnail: `https://picsum.photos/400/225?random=${i}`, // 随机图片地址
+            videoUrl: 'https://example.com/sample.mp4', // 替换为实际视频地址
+            description: `这是第 ${i + 1} 个视频的详细介绍内容，此处为示例文字。视频内容说明文字需要在此处展示...`
+        }));
 
-        // 生成视频列表
-        function renderVideoList() {
+        // 页面元素
+        const homePage = document.getElementById('home-page');
+        const detailPage = document.getElementById('detail-page');
+        const backBtn = document.getElementById('back-btn');
+
+        // 初始化视频列表
+        function initVideoList() {
             const container = document.getElementById('video-list');
             container.innerHTML = videos.map(video => `
                 <div class="video-card" data-id="${video.id}">
@@ -177,37 +198,57 @@
 
             // 添加点击事件
             document.querySelectorAll('.video-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const id = card.dataset.id;
-                    showDetailPage(id);
-                });
+                card.addEventListener('click', () => showDetail(card.dataset.id));
             });
         }
 
         // 显示详情页
-        function showDetailPage(id) {
+        function showDetail(id) {
             const video = videos.find(v => v.id == id);
             if (!video) return;
 
-            // 隐藏首页
-            document.getElementById('home-page').style.display = 'none';
-            
-            // 显示详情页
-            const detailPage = document.getElementById('detail-page');
+            // 更新页面状态
+            homePage.style.display = 'none';
             detailPage.style.display = 'block';
             
-            // 填充数据
-            detailPage.querySelector('video source').src = video.videoUrl;
-            detailPage.querySelector('.video-title').textContent = video.title;
-            detailPage.querySelector('.video-description').textContent = video.description;
-            
-            // 重新加载视频
+            // 设置视频详情
+            document.getElementById('detail-title').textContent = video.title;
+            document.getElementById('detail-description').textContent = video.description;
             const videoElement = detailPage.querySelector('video');
+            videoElement.querySelector('source').src = video.videoUrl;
             videoElement.load();
+
+            // 添加历史记录
+            history.pushState({ page: 'detail', id }, '', `#detail=${id}`);
         }
 
+        // 返回列表
+        function backToList() {
+            homePage.style.display = 'block';
+            detailPage.style.display = 'none';
+            history.replaceState(null, '', ' ');
+            const videoElement = detailPage.querySelector('video');
+            videoElement.pause();
+            videoElement.currentTime = 0;
+        }
+
+        // 事件监听
+        backBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            backToList();
+        });
+
+        // 处理浏览器前进/后退
+        window.addEventListener('popstate', (e) => {
+            if (e.state?.page === 'detail') {
+                showDetail(e.state.id);
+            } else {
+                backToList();
+            }
+        });
+
         // 初始化
-        renderVideoList();
+        initVideoList();
     </script>
 </body>
 </html>
